@@ -1,5 +1,5 @@
 const prisma = require('../prisma/prisma')
-
+//list เดี่ยว
 
 exports.listRoom = async(req,res)=>{
     try{

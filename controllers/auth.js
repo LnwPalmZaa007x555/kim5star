@@ -228,3 +228,4 @@ exports.login = async (req,res)=>{
         res.json({ message : 'Server error'}).status(500)
     }
 }
+//logout

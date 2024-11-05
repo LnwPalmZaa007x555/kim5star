@@ -1,6 +1,11 @@
 const prisma = require('../prisma/prisma');
 const { differenceInMonths } = require('date-fns');
 
+//get booking single, if admin->many
+//delete booking
+//patch booking
+//admin pick some booking
+
 exports.createBook = async (req, res) => {
     try {
         const { startDate, endDate, numGuest } = req.body;
