@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId    Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String
+  phone     String
+  fname     String
+  lname     String
+  role      Role       @default(USER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  customers Customer[]
+  staff     Staff[]
+}
+
+enum Role {
+  USER
+  STAFF
+  ADMIN
+}
+
+model Dormitory {
+  dormitoryId Int        @id @default(autoincrement())
+  phone       String
+  address     String
+  customers   Customer[]
+  staff       Staff[]
+  rooms       Room[]
+}
+
+model Customer {
+  customerId  Int       @id @default(autoincrement())
+  userId      Int
+  dormitoryId Int
+  user        User      @relation(fields: [userId], references: [userId])
+  dormitory   Dormitory @relation(fields: [dormitoryId], references: [dormitoryId])
+  bookings    Booking[]
+}
+
+model Staff {
+  staffId     Int       @id @default(autoincrement())
+  position    String
+  salary      Int
+  userId      Int
+  dormitoryId Int
+  user        User      @relation(fields: [userId], references: [userId])
+  dormitory   Dormitory @relation(fields: [dormitoryId], references: [dormitoryId])
+}
+
+model Room {
+  roomId      Int       @id @default(autoincrement())
+  roomName    String
+  roomPrice   Int
+  roomStatus  Int // 0,1
+  dormitoryId Int
+  dormitory   Dormitory @relation(fields: [dormitoryId], references: [dormitoryId])
+  booking     Booking?
+}
+
+model Payment {
+  paymentId Int      @id @default(autoincrement())
+  amount    Int
+  installments Int 
+  paypermonth Int 
+  payDate   DateTime  //+1เดือน
+  booking   Booking? 
+}
+
+model Booking {
+  bookingId     Int      @id @default(autoincrement())
+  bookingStatus Int // 0,1=0ยังไม่ครบ 1=จ่ายครบ
+  startDate     DateTime 
+  endDate       DateTime
+  numGuest      Int
+  customerId    Int      
+  roomId        Int      @unique
+  paymentId     Int      @unique
+  customer      Customer? @relation(fields: [customerId], references: [customerId])
+  room          Room?     @relation(fields: [roomId], references: [roomId])
+  payment       Payment?  @relation(fields: [paymentId], references: [paymentId])
+}
