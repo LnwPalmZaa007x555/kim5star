@@ -5,7 +5,7 @@ const { differenceInMonths } = require('date-fns');
 //delete booking
 //patch booking
 //admin pick some booking
-
+// ihearkob
 exports.createBook = async (req, res) => {
     try {
         const { startDate, endDate, numGuest } = req.body;
