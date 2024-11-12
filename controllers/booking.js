@@ -18,7 +18,7 @@ exports.getBooking = async (req,res)=>{
                 
                 }
             }) 
-            const customerId = customer.userId
+            const customerId = customer.customerId
             const book = await prisma.booking.findUnique({
                 where: {
                     bookingId : Number(bookingId)
@@ -68,11 +68,53 @@ exports.getBooking = async (req,res)=>{
     }
 }
 exports.listAllBooking = async (req,res)=>{
-    try{
-        
-    }catch(err){
-
-    }
+        try{
+            const checkrole = req.user.pl.role 
+            if(checkrole === "USER"){
+                const customer = await prisma.customer.findFirst({
+                where:{
+                    userId : Number(req.user.pl.id)
+                    
+                    }
+                }) 
+                const customerId = customer.customerId
+                const book = await prisma.booking.findMany({
+                    where: {
+                        customerId : Number(customerId)
+                    }
+                })
+                if(!book){
+                    return res.status(500).json({
+                        success : false,
+                        message : "No booking for you GET OUT"
+                    })
+                }
+                return res.status(200).json({
+                    success: true,
+                    data : book
+                })
+            }
+            if(checkrole === "STAFF" || checkrole === "ADMIN"){
+                const book = await prisma.booking.findMany({})
+                if(!book){
+                    return res.status(500).json({
+                        success : false,
+                        message : "No booking for you GET OUT"
+                    })
+                }
+                return res.status(200).json({
+                    success : true,
+                    data : book
+                })
+            }
+            return res.status(404).json({
+                success: false,
+                message :"cant identify your role"
+            })
+        }catch(err){
+            console.error(err);
+            res.status(500).json({ error: "can't get all booking" });
+        }
 }
 
 
@@ -94,9 +136,9 @@ exports.createBook = async (req, res) => {
         if (!room) {
             return res.status(404).json({ error: "Room not found" });
         }
-        const customer = await prisma.customer.findUnique({
+        const customer = await prisma.customer.findFirst({
             where: {
-                customerId: Number(req.user.pl.id)
+                userId: Number(req.user.pl.id)
             }
         });
         if (!customer) {
