@@ -1,6 +1,7 @@
 const prisma = require('../prisma/prisma')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const { token } = require('morgan')
 
 exports.registerUser = async(req,res)=>{
     try{
@@ -228,4 +229,17 @@ exports.login = async (req,res)=>{
         res.json({ message : 'Server error'}).status(500)
     }
 }
-//logout
+exports.logout = async (req,res)=>{
+    try{
+        res.cookie("token","nonecookie",{
+            httpOnly: true,
+            maxAge: 5000
+        })
+        res.status(200).json({
+            success : true,
+        })
+
+    }catch(err){
+        return res.status(500).json({message: 'server error'})
+    }
+}

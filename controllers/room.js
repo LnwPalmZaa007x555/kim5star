@@ -1,7 +1,31 @@
 const prisma = require('../prisma/prisma')
-//list เดี่ยว
 
 exports.listRoom = async(req,res)=>{
+    try {
+        const {roomId} = req.params
+        const room = await prisma.room.findUnique({
+            where:{
+                roomId : Number(roomId)
+            }
+        })
+        if(!roomId){
+            return res.status(500).json({
+                success : false,
+                message : "No room for you GET OUT"
+            })
+        }
+        res.status(200).json({
+            success: true,
+            data : room
+        })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ 
+            success : false,
+            message: 'Server error cant get room'})
+    }
+}
+exports.listRooms= async(req,res)=>{
     try{
         const rooms = await prisma.room.findMany({})
         //console.log(rooms)

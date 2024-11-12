@@ -1,5 +1,5 @@
 const prisma = require('../prisma/prisma')
-//STAFF AND ADMIN CAN WATCH ALL PAYMENT
+//STAFF AND ADMIN CAN WATCH ALL PAYMENT ควยเสดละ
 exports.getPaymentAll = async(req,res)=>{
     try{
         const payment = await prisma.payment.findMany({})
