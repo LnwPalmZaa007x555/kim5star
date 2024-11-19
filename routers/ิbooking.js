@@ -7,11 +7,11 @@ const { auth, authorize } = require('../middleware/auth')
 
 
 
-router.get('/booking/:bookingId',auth,getBooking)
-router.get('/booking',auth,listAllBooking)
+router.get('/bookings/:bookingId',auth,getBooking)
+router.get('/bookings',auth,listAllBooking)
 
-router.post('/booking/:roomId',auth,createBook)
-router.delete('/booking/:bookingId',auth,removeBooking)
+router.post('/bookings/:roomId',auth,createBook)
+router.delete('/bookings/:bookingId',auth,removeBooking)
 
 
 

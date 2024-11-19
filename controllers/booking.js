@@ -4,7 +4,7 @@ const { differenceInMonths,addMonths } = require('date-fns');
 //get booking single, if admin->many //done
 //delete booking done
 //patch booking
-//admin pick some booking
+//admin pick some booking done
 //admin can create booking for customer
 
 exports.getBooking = async (req,res)=>{
