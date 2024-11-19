@@ -134,6 +134,16 @@ exports.removeBooking = async(req,res)=>{
             message: 'cant delete booking'})
     }
 }
+exports.updateBooking = async(req,res)=>{
+    try {
+        const { bookingId } = req.params
+
+
+    } catch (err) {
+        
+    }
+}
+
 
 exports.createBook = async (req, res) => {
     try {
