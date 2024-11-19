@@ -2,7 +2,7 @@ const prisma = require('../prisma/prisma');
 const { differenceInMonths } = require('date-fns');
 
 //get booking single, if admin->many //done
-//delete booking
+//delete booking done
 //patch booking
 //admin pick some booking
 //admin can create booking for customer
@@ -116,10 +116,24 @@ exports.listAllBooking = async (req,res)=>{
             res.status(500).json({ error: "can't get all booking" });
         }
 }
-
-
-
-
+exports.removeBooking = async(req,res)=>{
+    try {
+        const { bookingId } = req.params
+        const removed = await prisma.booking.delete({
+            where:{
+                bookingId:Number(bookingId)
+            }
+        })
+        return res.status(200).json({
+            success : true,
+            message : "Deleted booking success"
+        })
+    } catch (err) {
+        return res.status(500).json({ 
+            success : false,
+            message: 'cant delete booking'})
+    }
+}
 
 exports.createBook = async (req, res) => {
     try {
