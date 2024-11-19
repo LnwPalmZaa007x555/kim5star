@@ -144,7 +144,7 @@ exports.updateBooking = async(req,res)=>{
     }
 }
 
-
+//kuykob
 exports.createBook = async (req, res) => {
     try {
         const { startDate, endDate, numGuest } = req.body;
@@ -209,4 +209,3 @@ exports.createBook = async (req, res) => {
         res.status(500).json({ error: "can't create booking" });
     }
 };
-
