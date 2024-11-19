@@ -137,10 +137,22 @@ exports.removeBooking = async(req,res)=>{
 exports.updateBooking = async(req,res)=>{
     try {
         const { bookingId } = req.params
+        const { numGuest } = req.body
 
-
+        const updated = await prisma.booking.update({
+            where: {
+                bookingId: Number(bookingId)
+            },
+            data: req.body
+        })
+        return res.status(200).json({
+            success : true,
+            message : "updated booking success"
+        })
     } catch (err) {
-        
+        return res.status(500).json({ 
+            success : false,
+            message: 'cant update booking'})
     }
 }
 
