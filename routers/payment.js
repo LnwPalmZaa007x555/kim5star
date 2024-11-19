@@ -9,7 +9,7 @@ const { auth, authorize } = require('../middleware/auth')
 
 
 router.get('/payments',auth,authorize('STAFF','ADMIN'),getPaymentAll)
-router.get('/payments/:userId',auth,getPayment)
+router.get('/payments/:bookingId',auth,getPayment)
 router.patch('/payments/:paymentId',auth,decreasePayment) //
 
 module.exports = router

@@ -3,7 +3,7 @@ const { differenceInMonths,addMonths } = require('date-fns');
 
 //get booking single, if admin->many //done
 //delete booking done
-//patch booking
+//patch booking done
 //admin pick some booking done
 //admin can create booking for customer
 
@@ -155,14 +155,11 @@ exports.updateBooking = async(req,res)=>{
             message: 'cant update booking'})
     }
 }
-
-//kuykob
-exports.createBook = async (req, res) => {
+exports.bookingUser = async(req,res)=>{
     try {
-        const { startDate, endDate, numGuest } = req.body;
-        const { roomId } = req.params;
-        console.log(req.user.pl.id)
-        // Find the room details
+        const { startDate, endDate, numGuest, customerId} = req.body
+        const { roomId } = req.params
+
         const room = await prisma.room.findUnique({
             where: {
                 roomId: Number(roomId)
@@ -170,15 +167,24 @@ exports.createBook = async (req, res) => {
         });
 
         if (!room) {
-            return res.status(404).json({ error: "Room not found" });
+            return res.status(404).json({ 
+                success : false,
+                message: 'Room not found'})
+        }
+        if(room.roomStatus===1){
+            return res.status(500).json({ 
+                success : false,
+                message: 'room busy'}) 
         }
         const customer = await prisma.customer.findFirst({
             where: {
-                userId: Number(req.user.pl.id)
+                customerId: Number(customerId)
             }
         });
         if (!customer) {
-            return res.status(404).json({ error: "Customer not found" });
+            return res.status(404).json({ 
+                success : false,
+                message: 'Customer not found'})
         }
         // Calculate the difference in months between startDate and endDate
         const start = new Date(startDate);
@@ -213,11 +219,110 @@ exports.createBook = async (req, res) => {
                 },
             }
         });
-        
-
-        res.status(201).json({ booking });
+        const status = await prisma.room.update({
+            where:{
+                roomId:Number(roomId)
+            },
+            data:{
+                roomStatus:1
+            }
+        })
+        return res.status(200).json({
+            success : true,
+            data: booking,
+            message : "updated booking success"
+        })
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "can't create booking" });
+        return res.status(500).json({ 
+            success : false,
+            message: 'Error dai ngai mai ru'})
+    }
+}
+
+exports.createBook = async (req, res) => {
+    try {
+        const { startDate, endDate, numGuest } = req.body;
+        const { roomId } = req.params;
+        console.log(req.user.pl.id)
+        // Find the room details
+        const room = await prisma.room.findUnique({
+            where: {
+                roomId: Number(roomId)
+            }
+        });
+
+        if (!room) {
+            return res.status(404).json({ 
+                success : false,
+                message: 'Room not found'})
+        }
+        if(room.roomStatus===1){
+            return res.status(500).json({ 
+                success : false,
+                message: 'room busy'}) 
+        }
+        const customer = await prisma.customer.findFirst({
+            where: {
+                userId: Number(req.user.pl.id)
+            }
+        });
+        if (!customer) {
+            return res.status(404).json({ error: "Customer not found" });
+        }
+        // Calculate the difference in months between startDate and endDate
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const installments = differenceInMonths(end, start);
+
+        // Define payment details
+        const amount = room.roomPrice * installments; // Adjust calculation as needed 
+        const paypermonth = Math.ceil(amount / installments); // Monthly payment
+
+
+        // Create booking record
+        const newBooking = await prisma.booking.create({
+            data: {
+                bookingStatus: 0,
+                startDate: startDate,
+                endDate: endDate,
+                numGuest: numGuest,
+                room: {
+                    connect: { roomId: Number(roomId) } // การเชื่อมโยงห้อง
+                },
+                customer: {
+                    connect: { customerId: customer.customerId } // การเชื่อมโยงลูกค้า
+                },
+                payment: {
+                    create: {  // สร้างข้อมูล payment ใหม่
+                        amount: Number(amount),
+                        installments: installments,
+                        paypermonth: paypermonth,
+                        payDate: addMonths(start, 1), // วันที่เริ่มต้นการชำระ
+                    }
+                },
+            },
+        });
+        const status = await prisma.room.update({
+            where:{
+                roomId:Number(roomId)
+            },
+            data:{
+                roomStatus:1
+            }
+        })
+        // อัปเดต bookingId ใน payment
+        await prisma.payment.update({
+            where: { paymentId: newBooking.paymentId },
+            data: { bookingId: newBooking.bookingId },
+        });
+        return res.status(200).json({
+            success : true,
+            data: newBooking,
+            message : "updated booking success"
+        })
+    } catch (err) {
+        return res.status(500).json({ 
+            success : false,
+            message: 'Error dai ngai mai ru'})
     }
 };

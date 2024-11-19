@@ -74,6 +74,7 @@ model Payment {
   installments Int 
   paypermonth Int 
   payDate   DateTime  //+1เดือน
+  bookingId Int?
   booking   Booking? 
 }
 
