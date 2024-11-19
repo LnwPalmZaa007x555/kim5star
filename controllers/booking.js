@@ -1,5 +1,5 @@
 const prisma = require('../prisma/prisma');
-const { differenceInMonths } = require('date-fns');
+const { differenceInMonths,addMonths } = require('date-fns');
 
 //get booking single, if admin->many //done
 //delete booking done
@@ -177,15 +177,6 @@ exports.createBook = async (req, res) => {
         const amount = room.roomPrice * installments; // Adjust calculation as needed 
         const paypermonth = Math.ceil(amount / installments); // Monthly payment
 
-        // Create payment record
-        const payment = await prisma.payment.create({
-            data: {
-                amount: Number(amount),
-                installments: installments,
-                paypermonth: paypermonth,
-                payDate: new Date(start.setMonth(start.getMonth() + 1)),
-            }
-        });
 
         // Create booking record
         const booking = await prisma.booking.create({
@@ -195,18 +186,24 @@ exports.createBook = async (req, res) => {
                 endDate: endDate,
                 numGuest: numGuest,
                 room: {
-                    connect: { roomId: Number(roomId) } // ใช้ connect แทนการใช้ roomId
+                    connect: { roomId: Number(roomId) } // การเชื่อมโยงห้อง
                 },
                 customer: {
-                    connect: { customerId: customer.customerId } // ใช้ connect แทนการใช้ customerId
+                    connect: { customerId: customer.customerId } // การเชื่อมโยงลูกค้า
                 },
-                payment:{
-                    connect: { paymentId: Number(payment.paymentId) }
-                }, // Link payment to booking
+                payment: {
+                    create: {  // สร้างข้อมูล payment ใหม่
+                        amount: Number(amount),
+                        installments: installments,
+                        paypermonth: paypermonth,
+                        payDate: addMonths(start, 1), // วันที่เริ่มต้นการชำระ
+                    }
+                },
             }
         });
+        
 
-        res.status(201).json({ booking, payment });
+        res.status(201).json({ booking });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "can't create booking" });
