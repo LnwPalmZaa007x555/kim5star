@@ -1,9 +1,12 @@
 const prisma = require("../prisma/prisma");
-//STAFF AND ADMIN CAN WATCH ALL PAYMENT ควยเสดละ
+
 exports.getPaymentAll = async (req, res) => {
   try {
     const payment = await prisma.payment.findMany({});
-    res.json(payment).status(200);
+    res.status(200).json({
+      success: true,
+      data: payment,
+    });
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -54,9 +57,8 @@ exports.getPayment = async (req, res) => {
     }
     return res.status(200).json({
       success: true,
-      data:booking.payment,
+      data: booking.payment,
     });
-
   } catch (err) {
     return res.status(500).json({
       success: false,
@@ -74,11 +76,17 @@ exports.decreasePayment = async (req, res) => {
     });
 
     if (!payment) {
-      return res.status(400).json({ message: "Payment not found" });
+      return res.status(400).json({
+        success: false,
+        message: "Payment not found",
+      });
     }
 
     if (payment.installments === 0) {
-      return res.status(500).json({ message: "หมดสัญญา" });
+      return res.status(500).json({
+        success: false,
+        message: "หมดสัญญา",
+      });
     }
 
     // ตรวจสอบว่ามี booking ที่เชื่อมกับ payment นี้หรือไม่
@@ -90,9 +98,10 @@ exports.decreasePayment = async (req, res) => {
 
     if (payment.installments === 1) {
       if (!booking) {
-        return res
-          .status(400)
-          .json({ message: "Booking not found for this payment" });
+        return res.status(400).json({
+          success: false,
+          message: "Booking not found for this payment",
+        });
       }
 
       // อัพเดตสถานะ bookingStatus เป็น 1 เมื่อผ่อนครบงวด
@@ -120,9 +129,15 @@ exports.decreasePayment = async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: "Update payment success" });
+    res.status(200).json({
+      success: true,
+      message: "Update payment success",
+    });
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      success: true,
+      message: "Server error",
+    });
   }
 };

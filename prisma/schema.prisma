@@ -69,24 +69,24 @@ model Room {
 }
 
 model Payment {
-  paymentId Int      @id @default(autoincrement())
-  amount    Int
-  installments Int 
-  paypermonth Int 
-  payDate   DateTime  //+1เดือน
-  bookingId Int?
-  booking   Booking? 
+  paymentId    Int      @id @default(autoincrement())
+  amount       Int
+  installments Int
+  paypermonth  Int
+  payDate      DateTime //+1เดือน
+  bookingId    Int?
+  booking      Booking?
 }
 
 model Booking {
-  bookingId     Int      @id @default(autoincrement())
+  bookingId     Int       @id @default(autoincrement())
   bookingStatus Int // 0,1=0ยังไม่ครบ 1=จ่ายครบ
-  startDate     DateTime 
+  startDate     DateTime
   endDate       DateTime
   numGuest      Int
-  customerId    Int      
-  roomId        Int      @unique
-  paymentId     Int      @unique
+  customerId    Int
+  roomId        Int       @unique
+  paymentId     Int       @unique
   customer      Customer? @relation(fields: [customerId], references: [customerId])
   room          Room?     @relation(fields: [roomId], references: [roomId])
   payment       Payment?  @relation(fields: [paymentId], references: [paymentId])
