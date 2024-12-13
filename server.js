@@ -9,7 +9,10 @@ const cookieParser = require('cookie-parser');
 
 app.use(bodyParser.json())
 app.use(morgan('dev'))
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:3000', // ระบุโดเมนที่อนุญาต
+    credentials: true, // อนุญาตให้ส่ง Cookies
+}));
 app.use(cookieParser());
 
 

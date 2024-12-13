@@ -233,6 +233,7 @@ exports.login = async (req, res) => {
         id: user.userId,
         email: user.email,
         role: user.role,
+        phone: user.phone
       },
     };
     //4 create token อายุการใช้งาน ถ้าหมดต้อง login ใหม่

@@ -77,6 +77,14 @@ exports.listAllBooking = async (req, res) => {
         where: {
           customerId: Number(customerId),
         },
+        include: {
+          room: {
+            select: {
+              roomName: true,
+              roomPrice: true
+            },
+          },
+        },
       });
       if (!book) {
         return res.status(500).json({
@@ -90,7 +98,16 @@ exports.listAllBooking = async (req, res) => {
       });
     }
     if (checkrole === "STAFF" || checkrole === "ADMIN") {
-      const book = await prisma.booking.findMany({});
+      const book = await prisma.booking.findMany({
+        include: {
+          room: {
+            select: {
+              roomName: true,
+              roomPrice: true
+            },
+          },
+        },
+      });
       if (!book) {
         return res.status(500).json({
           success: false,

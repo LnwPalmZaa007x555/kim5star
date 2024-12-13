@@ -80,7 +80,7 @@ model Payment {
 
 model Booking {
   bookingId     Int       @id @default(autoincrement())
-  bookingStatus Int // 0,1=0ยังไม่ครบ 1=จ่ายครบ
+  bookingStatus Int // 0,1=0ยังไม่ครบ exist 1=จ่ายครบ หมดสัญญา 2= cancel
   startDate     DateTime
   endDate       DateTime
   numGuest      Int
