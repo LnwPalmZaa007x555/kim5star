@@ -81,11 +81,12 @@ exports.listAllBooking = async (req, res) => {
           room: {
             select: {
               roomName: true,
-              roomPrice: true
+              roomPrice: true,
             },
           },
         },
       });
+      
       if (!book) {
         return res.status(500).json({
           success: false,
@@ -103,11 +104,24 @@ exports.listAllBooking = async (req, res) => {
           room: {
             select: {
               roomName: true,
-              roomPrice: true
+              roomPrice: true,
+            },
+          },
+          customer: {
+            select: {
+              user: {
+                select: {
+                  fname: true,
+                  lname: true,
+                  phone: true,
+                  email: true,
+                },
+              },
             },
           },
         },
       });
+      
       if (!book) {
         return res.status(500).json({
           success: false,
@@ -345,7 +359,7 @@ exports.createBook = async (req, res) => {
   } catch (err) {
     return res.status(500).json({
       success: false,
-      message: "Error dai ngai mai ru",
+      message: err.message,
     });
   }
 };
