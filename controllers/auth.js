@@ -11,10 +11,10 @@ exports.getME = async (req, res) => {
         userId: Number(userId),
       },
     });
-    const { email, role } = detailUser;
+    const { fname, lname, email, phone, role, createdAt} = detailUser;
     return res.status(200).json({
       success: true,
-      data: { email, role },
+      data: { fname, lname, email, phone, role, createdAt },
     });
   } catch (err) {
     return res.status(500).json({

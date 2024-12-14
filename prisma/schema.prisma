@@ -62,10 +62,10 @@ model Room {
   roomId      Int       @id @default(autoincrement())
   roomName    String
   roomPrice   Int
-  roomStatus  Int // 0,1
+  roomStatus  Int       // 0=ว่าง, 1=ไม่ว่าง
   dormitoryId Int
   dormitory   Dormitory @relation(fields: [dormitoryId], references: [dormitoryId])
-  booking     Booking?
+  bookings    Booking[] // 1-to-many กับ Booking
 }
 
 model Payment {
@@ -80,14 +80,14 @@ model Payment {
 
 model Booking {
   bookingId     Int       @id @default(autoincrement())
-  bookingStatus Int // 0,1=0ยังไม่ครบ exist 1=จ่ายครบ หมดสัญญา 2= cancel
+  bookingStatus Int       // 0=ยังไม่ครบ, 1=จ่ายครบ, 2=ยกเลิก
   startDate     DateTime
   endDate       DateTime
   numGuest      Int
   customerId    Int
-  roomId        Int       @unique
+  roomId        Int       // Foreign key, ไม่ต้อง unique
   paymentId     Int       @unique
   customer      Customer? @relation(fields: [customerId], references: [customerId])
-  room          Room?     @relation(fields: [roomId], references: [roomId])
+  room          Room?     @relation(fields: [roomId], references: [roomId]) // Many-to-1 กับ Room
   payment       Payment?  @relation(fields: [paymentId], references: [paymentId])
 }

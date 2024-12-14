@@ -69,7 +69,7 @@ exports.createRoom = async (req, res) => {
 exports.updateRooms = async (req, res) => {
   try {
     const { roomId } = req.params;
-    const { roomPrice, roomName } = req.body;
+    const { roomPrice, roomName, roomStatus } = req.body;
 
     const updated = await prisma.room.update({
       where: {
@@ -77,7 +77,10 @@ exports.updateRooms = async (req, res) => {
       },
       data: req.body,
     });
-    res.send(updated);
+    return res.status(200).json({
+      success: true,
+      message: "doneeeee",
+    });
     //res.status(200).json({ message:'update success' })
   } catch (err) {
     console.log(err);
@@ -104,6 +107,30 @@ exports.removedRoom = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "cant remove room",
+    });
+  }
+};
+exports.userUpdateRooms = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { roomPrice, roomName, roomStatus } = req.body;
+
+    const updated = await prisma.room.update({
+      where: {
+        roomId: Number(roomId),
+      },
+      data: req.body,
+    });
+    return res.status(200).json({
+      success: true,
+      message: "doneeeee",
+    });
+    //res.status(200).json({ message:'update success' })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "cant update room na kub",
     });
   }
 };

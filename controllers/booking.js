@@ -277,20 +277,22 @@ exports.createBook = async (req, res) => {
   try {
     const { startDate, endDate, numGuest } = req.body;
     const { roomId } = req.params;
+    console.log(roomId)
     console.log(req.user.pl.id);
     // Find the room details
     const room = await prisma.room.findUnique({
       where: {
-        roomId: Number(roomId),
+        roomId: Number(roomId), // ตรวจสอบว่าห้องมีอยู่จริง
       },
     });
-
+    
     if (!room) {
       return res.status(404).json({
         success: false,
         message: "Room not found",
       });
     }
+    console.log(room)
     if (room.roomStatus === 1) {
       return res.status(500).json({
         success: false,
@@ -360,6 +362,28 @@ exports.createBook = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+exports.userUpdateBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { numGuest } = req.body;
+
+    const updated = await prisma.booking.update({
+      where: {
+        bookingId: Number(bookingId),
+      },
+      data: req.body,
+    });
+    return res.status(200).json({
+      success: true,
+      message: "updated booking success",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "cant update booking na ja",
     });
   }
 };
