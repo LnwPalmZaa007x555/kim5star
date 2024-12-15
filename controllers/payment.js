@@ -141,3 +141,61 @@ exports.decreasePayment = async (req, res) => {
     });
   }
 };
+exports.paymentInfo = async(req,res) =>{
+  try {
+    const checkrole = req.user.pl.role;
+    if (checkrole === "STAFF" || checkrole === "ADMIN") {
+      const payInfo = await prisma.payment.findMany({
+        include:{
+        customer: {
+          select: {
+            user: {
+              select: {
+                fname: true,
+                lname: true,
+                phone: true,
+                email: true,
+              },
+            },
+          },
+          customerId: true,
+        },
+        room: {
+          select: {
+            roomName: true,
+            roomPrice: true,
+          },
+        },
+        booking: {
+          select: {
+            bookingId : true,
+            startDate : true,
+            endDate : true
+          }
+        }
+      }  
+    })
+
+      if (!payInfo) {
+        return res.status(500).json({
+          success: false,
+          message: "No payInfo for you GET OUT",
+        });
+      }  
+      return res.status(200).json({
+        success: true,
+        data: payInfo,
+      });
+    }
+    return res.status(404).json({
+      success: false,
+      message: "cant identify your role",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Server ERROR",
+    });
+  }
+}

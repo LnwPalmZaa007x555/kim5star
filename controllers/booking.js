@@ -103,6 +103,7 @@ exports.listAllBooking = async (req, res) => {
         include: {
           room: {
             select: {
+              roomId: true,
               roomName: true,
               roomPrice: true,
             },
@@ -117,6 +118,14 @@ exports.listAllBooking = async (req, res) => {
                   email: true,
                 },
               },
+            },
+          },
+          payment:{
+            select:{
+              paymentId: true,
+              paypermonth: true,
+              installments: true,
+              amount: true,
             },
           },
         },
@@ -189,11 +198,11 @@ exports.updateBooking = async (req, res) => {
 exports.bookingUser = async (req, res) => {
   try {
     const { startDate, endDate, numGuest, customerId } = req.body;
-    const { roomId } = req.params;
+    const { roomName } = req.params;
 
-    const room = await prisma.room.findUnique({
+    const room = await prisma.room.findFirst({
       where: {
-        roomId: Number(roomId),
+        roomName: Number(roomName),
       },
     });
 
@@ -237,7 +246,7 @@ exports.bookingUser = async (req, res) => {
         endDate: endDate,
         numGuest: numGuest,
         room: {
-          connect: { roomId: Number(roomId) }, // การเชื่อมโยงห้อง
+          connect: { roomId: Number(room.roomId) }, // การเชื่อมโยงห้อง
         },
         customer: {
           connect: { customerId: customer.customerId }, // การเชื่อมโยงลูกค้า
@@ -255,7 +264,7 @@ exports.bookingUser = async (req, res) => {
     });
     const status = await prisma.room.update({
       where: {
-        roomId: Number(roomId),
+        roomId: Number(room.roomId),
       },
       data: {
         roomStatus: 1,

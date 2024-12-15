@@ -13,7 +13,7 @@ router.get('/bookings',auth,listAllBooking)
 router.post('/bookings/:roomId',auth,createBook)
 router.delete('/bookings/:bookingId',auth,removeBooking)
 router.patch('/bookings/:bookingId',auth,authorize('STAFF','ADMIN'),updateBooking)
-router.post('/bookings/service/:roomId',auth,authorize('STAFF','ADMIN'),bookingUser)
+router.post('/bookings/service/:roomName',auth,authorize('STAFF','ADMIN'),bookingUser)
 router.patch('/booking/:bookingId',auth,userUpdateBooking)
 
 
