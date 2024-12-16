@@ -108,7 +108,6 @@ exports.resetPassword = async (req, res) => {
     });
   }
 };
-
 exports.sendResetLink = async (req, res) => {
   try {
     const { email } = req.body;
@@ -170,6 +169,33 @@ exports.sendResetLink = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred. Please try again later.",
+    });
+  }
+};
+exports.updateRole = async (req, res) => {
+  try {
+    const { role, userId } = req.body;
+
+    console.log("Updating role for userId:", userId);
+    console.log("New role:", role);
+
+    const updated = await prisma.user.update({
+      where: {
+        userId: Number(userId),
+      },
+      data: { role },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Update role success",
+      data: updated,
+    });
+  } catch (err) {
+    console.error("Error updating role:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

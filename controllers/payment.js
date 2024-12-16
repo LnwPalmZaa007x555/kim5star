@@ -199,3 +199,68 @@ exports.paymentInfo = async(req,res) =>{
     });
   }
 }
+exports.increasePayment = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+
+    // ค้นหาข้อมูลการชำระเงิน
+    const payment = await prisma.payment.findUnique({
+      where: {
+        paymentId: Number(paymentId),
+      },
+    });
+
+    if (!payment) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment not found",
+      });
+    }
+
+    if (payment.installments >= 12) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot increase payment beyond 12 installments",
+      });
+    }
+
+    // ตรวจสอบว่ามี booking ที่เชื่อมกับ payment นี้หรือไม่
+    const booking = await prisma.booking.findUnique({
+      where: {
+        paymentId: Number(paymentId),
+      },
+    });
+
+    if (!booking) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking not found for this payment",
+      });
+    }
+
+    // เพิ่มจำนวนงวดการชำระ
+    await prisma.payment.update({
+      where: {
+        paymentId: Number(paymentId),
+      },
+      data: {
+        amount: payment.amount + payment.paypermonth,
+        installments: payment.installments + 1,
+        payDate: new Date(
+          new Date(payment.payDate).setMonth(payment.payDate.getMonth() - 1)
+        ), // ย้อนวันที่กลับมา 1 เดือน
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Increase payment success",
+    });
+  } catch (err) {
+    console.log("Error in increasePayment:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

@@ -118,6 +118,7 @@ exports.listAllBooking = async (req, res) => {
                   email: true,
                 },
               },
+              customerId: true,
             },
           },
           payment:{
@@ -197,12 +198,40 @@ exports.updateBooking = async (req, res) => {
 };
 exports.bookingUser = async (req, res) => {
   try {
-    const { startDate, endDate, numGuest, customerId } = req.body;
+    // ตรวจสอบ role ของผู้ใช้งาน
+    const checkrole = req.user.pl.role;
+
+    if (checkrole !== "STAFF" && checkrole !== "ADMIN") {
+      return res.status(403).json({
+        success: false,
+        message: "You do not have permission to perform this action",
+      });
+    }
+
+    // รับข้อมูลจาก frontend
+    const { startDate, endDate, numGuest, customerId } = req.body; // รับ roomName จาก body
     const { roomName } = req.params;
 
+    console.log("Request Body:", req.body);
+
+    // ตรวจสอบว่ามี roomName ใน body หรือไม่
+    if (!roomName) {
+      return res.status(400).json({
+        success: false,
+        message: "Room name is required",
+      });
+    }
+
+
+    // ค้นหาห้องในฐานข้อมูล
     const room = await prisma.room.findFirst({
       where: {
-        roomName: Number(roomName),
+        roomName: String(roomName), // แปลง roomName เป็นตัวเลขก่อนเช็ค
+      },
+      select: {
+        roomId: true, // ดึงเฉพาะ roomId
+        roomStatus: true, // ดึงสถานะห้องมาด้วยสำหรับตรวจสอบ
+        roomPrice: true, // ดึงราคาห้องสำหรับการคำนวณ
       },
     });
 
@@ -212,57 +241,62 @@ exports.bookingUser = async (req, res) => {
         message: "Room not found",
       });
     }
+
     if (room.roomStatus === 1) {
-      return res.status(500).json({
+      return res.status(400).json({
         success: false,
-        message: "room busy",
+        message: "Room is currently occupied",
       });
     }
+
+    // ค้นหาลูกค้าในฐานข้อมูล
     const customer = await prisma.customer.findFirst({
       where: {
-        customerId: Number(customerId),
+        userId: Number(customerId),
       },
     });
+
     if (!customer) {
       return res.status(404).json({
         success: false,
         message: "Customer not found",
       });
     }
-    // Calculate the difference in months between startDate and endDate
+
+    // คำนวณระยะเวลาการเช่าและจำนวนเงิน
     const start = new Date(startDate);
     const end = new Date(endDate);
     const installments = differenceInMonths(end, start);
 
-    // Define payment details
-    const amount = room.roomPrice * installments; // Adjust calculation as needed
-    const paypermonth = Math.ceil(amount / installments); // Monthly payment
+    const amount = room.roomPrice * installments; // ราคาทั้งหมด
+    const paypermonth = Math.ceil(amount / installments); // คำนวณการจ่ายต่อเดือน
 
-    // Create booking record
+    // สร้าง Booking
     const booking = await prisma.booking.create({
       data: {
-        bookingStatus: 0,
-        startDate: startDate,
-        endDate: endDate,
-        numGuest: numGuest,
+        bookingStatus: 0, // Initial booking status
+        startDate: start,
+        endDate: end,
+        numGuest,
         room: {
-          connect: { roomId: Number(room.roomId) }, // การเชื่อมโยงห้อง
+          connect: { roomId: Number(room.roomId) },
         },
         customer: {
-          connect: { customerId: customer.customerId }, // การเชื่อมโยงลูกค้า
+          connect: { customerId: Number(customer.customerId) },
         },
         payment: {
           create: {
-            // สร้างข้อมูล payment ใหม่
             amount: Number(amount),
-            installments: installments,
-            paypermonth: paypermonth,
-            payDate: addMonths(start, 1), // วันที่เริ่มต้นการชำระ
+            installments,
+            paypermonth,
+            payDate: addMonths(start, 1),
           },
         },
       },
     });
-    const status = await prisma.room.update({
+
+    // อัปเดตสถานะของห้องพักให้เป็น "Occupied"
+    await prisma.room.update({
       where: {
         roomId: Number(room.roomId),
       },
@@ -270,15 +304,17 @@ exports.bookingUser = async (req, res) => {
         roomStatus: 1,
       },
     });
+
     return res.status(200).json({
       success: true,
       data: booking,
-      message: "updated booking success",
+      message: "Booking created successfully",
     });
   } catch (err) {
+    console.error("Error in bookingUser:", err);
     return res.status(500).json({
       success: false,
-      message: "Error dai ngai mai ru",
+      message: "An error occurred while processing the booking",
     });
   }
 };
